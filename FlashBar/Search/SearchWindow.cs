@@ -97,7 +97,7 @@ internal static unsafe class SearchWindow
         int screenW = GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
         int screenH = GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
         int height = QueryHeight + RowHeight * VisibleRows;
-        MoveWindow(s_hwnd, (screenW - WindowWidth) / 2, screenH / 4, WindowWidth, height, true);
+        MoveWindow(s_hwnd, (screenW - WindowWidth) / 2, (screenH - height) / 2, WindowWidth, height, true);
         ApplyRoundedCorners(WindowWidth, height);
 
         s_visible = true;
