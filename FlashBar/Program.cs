@@ -19,6 +19,11 @@ internal static class Program
             PInvoke.MessageBox(HWND.Null, error, "FlashBar", MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
         }
 
+        if (AppStore.Load(AppStore.DefaultPath) is { } appsError)
+        {
+            PInvoke.MessageBox(HWND.Null, appsError, "FlashBar", MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+        }
+
         TrayApp.Run(result.Config);
     }
 }
