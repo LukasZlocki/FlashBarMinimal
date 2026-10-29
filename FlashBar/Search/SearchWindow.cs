@@ -12,7 +12,7 @@ namespace FlashBar.Search;
 internal static unsafe class SearchWindow
 {
     private const string WindowClassName = "FlashBarSearchWindow";
-    private const int WindowWidth = 560;
+    private const int WindowWidth = 400;
     private const int QueryHeight = 40;
     private const int RowHeight = 28;
     private const int VisibleRows = 8;
