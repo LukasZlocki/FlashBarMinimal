@@ -17,6 +17,7 @@ internal static unsafe class SearchWindow
     private const int RowHeight = 28;
     private const int VisibleRows = 8;
     private const int TextPadding = 10;
+    private const int CornerRadius = 16;
 
     private const uint BackgroundColor = 0x2D2D2D;
     private const uint SelectionColor = 0x505050;
@@ -97,10 +98,18 @@ internal static unsafe class SearchWindow
         int screenH = GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
         int height = QueryHeight + RowHeight * VisibleRows;
         MoveWindow(s_hwnd, (screenW - WindowWidth) / 2, screenH / 4, WindowWidth, height, true);
+        ApplyRoundedCorners(WindowWidth, height);
 
         s_visible = true;
         ShowWindow(s_hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         SetForegroundWindow(s_hwnd);
+    }
+
+    private static void ApplyRoundedCorners(int width, int height)
+    {
+        // The system owns the region after SetWindowRgn, so it is not deleted here.
+        HRGN region = CreateRoundRectRgn(0, 0, width + 1, height + 1, CornerRadius, CornerRadius);
+        SetWindowRgn(s_hwnd, region, true);
     }
 
     private static void Hide()

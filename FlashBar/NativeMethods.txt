@@ -66,6 +66,8 @@ COLORREF
 GetSysColor
 GetSysColorBrush
 CreateSolidBrush
+CreateRoundRectRgn
+SetWindowRgn
 CreateFont
 FONT_CHARSET
 FONT_OUTPUT_PRECISION
