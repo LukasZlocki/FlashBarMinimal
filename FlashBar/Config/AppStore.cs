@@ -4,10 +4,7 @@ namespace FlashBar.Config;
 
 public static class AppStore
 {
-    public static string DefaultPath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "FlashBarMinimal",
-        "apps.json");
+    public static string DefaultPath { get; } = Path.Combine(AppContext.BaseDirectory, "apps.json");
 
     private static string s_path = DefaultPath;
     private static bool s_readable;
