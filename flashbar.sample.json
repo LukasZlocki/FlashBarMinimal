@@ -1,0 +1,24 @@
+{
+  "hotkey": "Alt+Space",
+  "scanStartMenu": true,
+  "folders": [
+    {
+      "path": "C:\\Tools",
+      "recursive": false
+    },
+    {
+      "path": "D:\\Portable",
+      "recursive": true
+    }
+  ],
+  "apps": [
+    {
+      "name": "Notepad++",
+      "path": "C:\\Program Files\\Notepad++\\notepad++.exe",
+      "args": ""
+    },
+    {
+      "path": "C:\\Users\\lzloc\\AppData\\Local\\Programs\\SomeTool\\tool.exe"
+    }
+  ]
+}
