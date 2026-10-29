@@ -21,7 +21,20 @@ internal static class AppIndex
             AddDirectory(entries, Expand(folder.Path), folder.Recursive);
         }
 
-        foreach (AppEntry app in config.Apps)
+        entries.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+
+        // Same name and target can appear in several Start Menu folders.
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        entries.RemoveAll(e => !seen.Add(e.Name + "\u0001" + e.Target));
+
+        return entries;
+    }
+
+    public static List<SearchEntry> FromStore(IEnumerable<AppEntry> apps)
+    {
+        var entries = new List<SearchEntry>();
+
+        foreach (AppEntry app in apps)
         {
             string target = Expand(app.Path);
             if (string.IsNullOrWhiteSpace(target))
@@ -36,11 +49,6 @@ internal static class AppIndex
         }
 
         entries.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
-
-        // Same name and target can appear in several Start Menu folders.
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        entries.RemoveAll(e => !seen.Add(e.Name + "\u0001" + e.Target));
-
         return entries;
     }
 

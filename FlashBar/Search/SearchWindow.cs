@@ -32,6 +32,7 @@ internal static unsafe class SearchWindow
     private static DeleteObjectHFONTSafeHandle s_font = null!;
     private static HWND s_hwnd;
     private static List<SearchEntry> s_index = [];
+    private static List<SearchEntry> s_stored = [];
     private static List<SearchEntry> s_results = [];
     private static string s_query = "";
     private static int s_selected;
@@ -89,6 +90,7 @@ internal static unsafe class SearchWindow
 
     private static void Show(AppConfig config)
     {
+        s_stored = AppIndex.FromStore(AppStore.Apps);
         s_index = AppIndex.Build(config);
         s_query = "";
         s_selected = 0;
@@ -120,7 +122,13 @@ internal static unsafe class SearchWindow
 
     private static void Refresh()
     {
-        s_results = AppIndex.Filter(s_index, s_query, VisibleRows);
+        // Saved apps take priority; the disk index is only searched when nothing saved matches.
+        s_results = AppIndex.Filter(s_stored, s_query, VisibleRows);
+        if (s_results.Count == 0)
+        {
+            s_results = AppIndex.Filter(s_index, s_query, VisibleRows);
+        }
+
         if (s_selected >= s_results.Count)
         {
             s_selected = Math.Max(0, s_results.Count - 1);
@@ -137,6 +145,7 @@ internal static unsafe class SearchWindow
 
         SearchEntry entry = s_results[s_selected];
         Hide();
+        RememberApp(entry);
 
         fixed (char* verb = "open")
         fixed (char* file = entry.Target)
@@ -149,6 +158,18 @@ internal static unsafe class SearchWindow
                 entry.Arguments.Length > 0 ? new PCWSTR(args) : default,
                 default(PCWSTR),
                 SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+        }
+    }
+
+    private static void RememberApp(SearchEntry entry)
+    {
+        try
+        {
+            AppStore.Add(new AppEntry { Name = entry.Name, Path = entry.Target, Args = entry.Arguments });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            MessageBox(HWND.Null, $"Could not save the app to apps.json:\n\n{ex.Message}", "FlashBar", MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONWARNING);
         }
     }
 

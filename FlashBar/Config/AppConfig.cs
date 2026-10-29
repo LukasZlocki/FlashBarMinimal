@@ -10,8 +10,6 @@ public sealed class AppConfig
     public bool ScanStartMenu { get; set; } = true;
 
     public List<FolderEntry> Folders { get; set; } = [];
-
-    public List<AppEntry> Apps { get; set; } = [];
 }
 
 public sealed class FolderEntry
@@ -33,8 +31,10 @@ public sealed class AppEntry
 [JsonSourceGenerationOptions(
     PropertyNameCaseInsensitive = true,
     ReadCommentHandling = JsonCommentHandling.Skip,
-    AllowTrailingCommas = true)]
+    AllowTrailingCommas = true,
+    WriteIndented = true)]
 [JsonSerializable(typeof(AppConfig))]
+[JsonSerializable(typeof(List<AppEntry>))]
 internal sealed partial class AppConfigJsonContext : JsonSerializerContext
 {
 }
