@@ -22,9 +22,13 @@ internal static unsafe class SearchWindow
     private const uint SelectionColor = 0x505050;
     private const uint TextColor = 0xE6E6E6;
     private const uint HintTextColor = 0x969696;
+    private const string FontFaceName = "Consolas";
+    private const int FontHeight = -16;
+    private const int FontWeightNormal = 400;
 
     private static HBRUSH s_backgroundBrush;
     private static HBRUSH s_selectionBrush;
+    private static DeleteObjectHFONTSafeHandle s_font = null!;
     private static HWND s_hwnd;
     private static List<SearchEntry> s_index = [];
     private static List<SearchEntry> s_results = [];
@@ -36,6 +40,10 @@ internal static unsafe class SearchWindow
     {
         s_backgroundBrush = CreateSolidBrush(new COLORREF(BackgroundColor));
         s_selectionBrush = CreateSolidBrush(new COLORREF(SelectionColor));
+        s_font = CreateFont(FontHeight, 0, 0, 0, FontWeightNormal, 0, 0, 0,
+            FONT_CHARSET.DEFAULT_CHARSET, (uint)FONT_OUTPUT_PRECISION.OUT_DEFAULT_PRECIS,
+            (uint)FONT_CLIP_PRECISION.CLIP_DEFAULT_PRECIS, FONT_QUALITY.CLEARTYPE_QUALITY,
+            (uint)FONT_PITCH.FIXED_PITCH | (uint)FONT_FAMILY.FF_MODERN, FontFaceName);
 
         fixed (char* className = WindowClassName)
         {
@@ -143,7 +151,7 @@ internal static unsafe class SearchWindow
         GetClientRect(hwnd, out RECT client);
         FillRect(hdc, &client, s_backgroundBrush);
 
-        SelectObject(hdc, GetStockObject(GET_STOCK_OBJECT_FLAGS.DEFAULT_GUI_FONT));
+        SelectObject(hdc, new HFONT(s_font.DangerousGetHandle()));
         SetBkMode(hdc, BACKGROUND_MODE.TRANSPARENT);
 
         var queryRect = new RECT { left = 0, top = 0, right = client.right, bottom = QueryHeight };
