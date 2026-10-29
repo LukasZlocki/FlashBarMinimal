@@ -18,6 +18,13 @@ internal static unsafe class SearchWindow
     private const int VisibleRows = 8;
     private const int TextPadding = 10;
 
+    private const uint BackgroundColor = 0x2D2D2D;
+    private const uint SelectionColor = 0x505050;
+    private const uint TextColor = 0xE6E6E6;
+    private const uint HintTextColor = 0x969696;
+
+    private static HBRUSH s_backgroundBrush;
+    private static HBRUSH s_selectionBrush;
     private static HWND s_hwnd;
     private static List<SearchEntry> s_index = [];
     private static List<SearchEntry> s_results = [];
@@ -27,6 +34,9 @@ internal static unsafe class SearchWindow
 
     public static void Create(HINSTANCE hInstance)
     {
+        s_backgroundBrush = CreateSolidBrush(new COLORREF(BackgroundColor));
+        s_selectionBrush = CreateSolidBrush(new COLORREF(SelectionColor));
+
         fixed (char* className = WindowClassName)
         {
             var wc = new WNDCLASSEXW
@@ -131,18 +141,18 @@ internal static unsafe class SearchWindow
         HDC hdc = BeginPaint(hwnd, out ps);
 
         GetClientRect(hwnd, out RECT client);
-        FillRect(hdc, &client, GetSysColorBrush(SYS_COLOR_INDEX.COLOR_WINDOW));
+        FillRect(hdc, &client, s_backgroundBrush);
 
         SelectObject(hdc, GetStockObject(GET_STOCK_OBJECT_FLAGS.DEFAULT_GUI_FONT));
         SetBkMode(hdc, BACKGROUND_MODE.TRANSPARENT);
 
         var queryRect = new RECT { left = 0, top = 0, right = client.right, bottom = QueryHeight };
         string queryText = s_query;
-        COLORREF textColor = new(GetSysColor(SYS_COLOR_INDEX.COLOR_WINDOWTEXT));
+        COLORREF textColor = new(TextColor);
         if (queryText.Length == 0)
         {
             queryText = "Type an app name...";
-            textColor = new(GetSysColor(SYS_COLOR_INDEX.COLOR_GRAYTEXT));
+            textColor = new(HintTextColor);
         }
         DrawLine(hdc, queryText, queryRect, textColor);
 
@@ -159,12 +169,10 @@ internal static unsafe class SearchWindow
             bool selected = i == s_selected;
             if (selected)
             {
-                FillRect(hdc, &row, GetSysColorBrush(SYS_COLOR_INDEX.COLOR_HIGHLIGHT));
+                FillRect(hdc, &row, s_selectionBrush);
             }
 
-            COLORREF color = new(GetSysColor(selected
-                ? SYS_COLOR_INDEX.COLOR_HIGHLIGHTTEXT
-                : SYS_COLOR_INDEX.COLOR_WINDOWTEXT));
+            COLORREF color = new(TextColor);
             DrawLine(hdc, s_results[i].Name, row, color);
         }
 
