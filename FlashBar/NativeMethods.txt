@@ -65,5 +65,15 @@ SetTextColor
 COLORREF
 GetSysColor
 GetSysColorBrush
+CreateSolidBrush
+CreateRoundRectRgn
+SetWindowRgn
+CreateFont
+FONT_CHARSET
+FONT_OUTPUT_PRECISION
+FONT_CLIP_PRECISION
+FONT_QUALITY
+FONT_PITCH
+FONT_FAMILY
 SYS_COLOR_INDEX
 InvalidateRect

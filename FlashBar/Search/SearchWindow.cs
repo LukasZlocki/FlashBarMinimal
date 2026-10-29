@@ -17,7 +17,19 @@ internal static unsafe class SearchWindow
     private const int RowHeight = 28;
     private const int VisibleRows = 8;
     private const int TextPadding = 10;
+    private const int CornerRadius = 16;
 
+    private const uint BackgroundColor = 0x2D2D2D;
+    private const uint SelectionColor = 0x505050;
+    private const uint TextColor = 0xE6E6E6;
+    private const uint HintTextColor = 0x969696;
+    private const string FontFaceName = "Consolas";
+    private const int FontHeight = -16;
+    private const int FontWeightNormal = 400;
+
+    private static HBRUSH s_backgroundBrush;
+    private static HBRUSH s_selectionBrush;
+    private static DeleteObjectHFONTSafeHandle s_font = null!;
     private static HWND s_hwnd;
     private static List<SearchEntry> s_index = [];
     private static List<SearchEntry> s_results = [];
@@ -27,6 +39,13 @@ internal static unsafe class SearchWindow
 
     public static void Create(HINSTANCE hInstance)
     {
+        s_backgroundBrush = CreateSolidBrush(new COLORREF(BackgroundColor));
+        s_selectionBrush = CreateSolidBrush(new COLORREF(SelectionColor));
+        s_font = CreateFont(FontHeight, 0, 0, 0, FontWeightNormal, 0, 0, 0,
+            FONT_CHARSET.DEFAULT_CHARSET, (uint)FONT_OUTPUT_PRECISION.OUT_DEFAULT_PRECIS,
+            (uint)FONT_CLIP_PRECISION.CLIP_DEFAULT_PRECIS, FONT_QUALITY.CLEARTYPE_QUALITY,
+            (uint)FONT_PITCH.FIXED_PITCH | (uint)FONT_FAMILY.FF_MODERN, FontFaceName);
+
         fixed (char* className = WindowClassName)
         {
             var wc = new WNDCLASSEXW
@@ -79,10 +98,18 @@ internal static unsafe class SearchWindow
         int screenH = GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
         int height = QueryHeight + RowHeight * VisibleRows;
         MoveWindow(s_hwnd, (screenW - WindowWidth) / 2, screenH / 4, WindowWidth, height, true);
+        ApplyRoundedCorners(WindowWidth, height);
 
         s_visible = true;
         ShowWindow(s_hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         SetForegroundWindow(s_hwnd);
+    }
+
+    private static void ApplyRoundedCorners(int width, int height)
+    {
+        // The system owns the region after SetWindowRgn, so it is not deleted here.
+        HRGN region = CreateRoundRectRgn(0, 0, width + 1, height + 1, CornerRadius, CornerRadius);
+        SetWindowRgn(s_hwnd, region, true);
     }
 
     private static void Hide()
@@ -131,18 +158,18 @@ internal static unsafe class SearchWindow
         HDC hdc = BeginPaint(hwnd, out ps);
 
         GetClientRect(hwnd, out RECT client);
-        FillRect(hdc, &client, GetSysColorBrush(SYS_COLOR_INDEX.COLOR_WINDOW));
+        FillRect(hdc, &client, s_backgroundBrush);
 
-        SelectObject(hdc, GetStockObject(GET_STOCK_OBJECT_FLAGS.DEFAULT_GUI_FONT));
+        SelectObject(hdc, new HFONT(s_font.DangerousGetHandle()));
         SetBkMode(hdc, BACKGROUND_MODE.TRANSPARENT);
 
         var queryRect = new RECT { left = 0, top = 0, right = client.right, bottom = QueryHeight };
         string queryText = s_query;
-        COLORREF textColor = new(GetSysColor(SYS_COLOR_INDEX.COLOR_WINDOWTEXT));
+        COLORREF textColor = new(TextColor);
         if (queryText.Length == 0)
         {
             queryText = "Type an app name...";
-            textColor = new(GetSysColor(SYS_COLOR_INDEX.COLOR_GRAYTEXT));
+            textColor = new(HintTextColor);
         }
         DrawLine(hdc, queryText, queryRect, textColor);
 
@@ -159,12 +186,10 @@ internal static unsafe class SearchWindow
             bool selected = i == s_selected;
             if (selected)
             {
-                FillRect(hdc, &row, GetSysColorBrush(SYS_COLOR_INDEX.COLOR_HIGHLIGHT));
+                FillRect(hdc, &row, s_selectionBrush);
             }
 
-            COLORREF color = new(GetSysColor(selected
-                ? SYS_COLOR_INDEX.COLOR_HIGHLIGHTTEXT
-                : SYS_COLOR_INDEX.COLOR_WINDOWTEXT));
+            COLORREF color = new(TextColor);
             DrawLine(hdc, s_results[i].Name, row, color);
         }
 
